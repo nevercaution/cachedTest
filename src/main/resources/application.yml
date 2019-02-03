@@ -1,0 +1,14 @@
+
+spring:
+  gson:
+    date-format: YYYY-MM-dd HH:mm:ss
+    field-naming-policy: lower_case_with_underscores
+    serialize-nulls: false
+  http:
+    converters:
+      preferred-json-mapper: gson
+
+
+redis:
+  host: localhost
+  port: 6379
