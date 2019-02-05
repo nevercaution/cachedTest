@@ -77,4 +77,16 @@ public class RedisDB {
         }
         return null;
     }
+
+    public Long del(String key) {
+        try {
+            jedis.connect();
+            return jedis.del(key);
+        } catch (Throwable t) {
+            t.printStackTrace();
+        } finally {
+            jedis.disconnect();
+        }
+        return null;
+    }
 }

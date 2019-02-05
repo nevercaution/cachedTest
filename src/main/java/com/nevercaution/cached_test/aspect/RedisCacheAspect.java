@@ -9,6 +9,8 @@ import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.reflect.MethodSignature;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
@@ -20,6 +22,7 @@ import java.util.*;
 @Component
 @Aspect
 public class RedisCacheAspect {
+    Logger logger = LoggerFactory.getLogger(RedisCacheAspect.class);
     private static Map<String, RedisCacheParameterMethodInfo> cacheParameterMethodInfoMap = new HashMap<>();
 
     @Autowired
@@ -34,10 +37,11 @@ public class RedisCacheAspect {
 
         Class returnType = methodSignature.getReturnType();
 
+        logger.debug("aroundAspect start method name : " + methodName);
+
         String key = redisCached.key();
         int expire = redisCached.expire();
         boolean replace = redisCached.replace();
-
 
         // reflect caching
         List<String> parameterKeyList = new ArrayList<>();
@@ -71,6 +75,7 @@ public class RedisCacheAspect {
             cacheKeyBuilder.append(Joiner.on(",").join(parameterKeyList));
         }
         final String cacheKey = cacheKeyBuilder.toString();
+        logger.debug("make cacheKey : " + cacheKey);
 
         try {
             Object result;
@@ -79,6 +84,7 @@ public class RedisCacheAspect {
                 if (ttl > 0) {
 
                     result = redisDB.get(cacheKey, returnType);
+                    logger.info("aroundAspect find by key : " + cacheKey);
                     return result;
                 }
             }
@@ -89,7 +95,7 @@ public class RedisCacheAspect {
 
             return result;
         } catch (Throwable t) {
-            t.printStackTrace();
+            logger.error("aroundAspect make cache fail", t);
         }
 
         return null;
